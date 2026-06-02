@@ -1,0 +1,722 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3146fbbe-d258-4c27-ab70-8bac31eb9ab6",
+      "name": "Telegram Trigger",
+      "webhookId": "f859cdf0-99f0-4ba2-ae04-08b621e0a83b",
+      "credentials": {
+        "telegramApi": {
+          "id": "3dNgmRp8vjEiZ1Fa",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6755ca6f-e1d1-4da9-a8aa-8c18f53e6438",
+              "name": "={{ $json.message.chat.id }}",
+              "value": "={{ $json.message.chat.id }}",
+              "type": "number"
+            },
+            {
+              "id": "e278dd5a-786f-4381-bdc0-77f19a995975",
+              "name": "={{ $json.message.from.first_name }}",
+              "value": "={{ $json.message.chat.first_name }}",
+              "type": "string"
+            },
+            {
+              "id": "36a200b5-e9c5-4200-a5ee-e46804f73f4e",
+              "name": "={{ $json.message.text }}",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "59bfb944-c4fa-4a70-94f1-f516165dd267",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Eres el asistente virtual de MediConnect.\n\nClasifica el mensaje en una sola palabra:\n\nAGENDAR\nVER_CITAS\nAYUDA\n\nMensaje:\n{{ $('Telegram Trigger').item.json.message.text }}\n\nResponde Ãºnicamente una palabra.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "202b79a2-d8cf-4312-afd1-28ae40eb4168",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        416,
+        160
+      ],
+      "id": "8ff1eea9-180b-4f7b-9b1a-82a5d12b6b89",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "Z1LUzDZlb8GVa0MG",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "AGENDAR",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "c1f358fa-e36f-4fdb-9ea0-1cd05566ae3a"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "837b06fa-0c72-4a0d-afa0-5254c7f4637e",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "VER_CITAS",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "8ed53b29-af5e-4b42-bbfa-1f50832eeeb0",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "AYUDA",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        736,
+        -16
+      ],
+      "id": "96744c4f-7785-4c5d-92cc-6ade0c3f4d3a",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extrae la siguiente informaciÃ³n:\n\nnombre: {{ $('Telegram Trigger').item.json.message.chat.first_name }}\nfecha: {{ $('Telegram Trigger').item.json.message.date }}\nhora:{{ $('Telegram Trigger').item.json.message.text }}\nespecialidad: {{ $('Telegram Trigger').item.json.message.text }}\n\nMensaje:\n{{ $('Telegram Trigger').item.json.message.text }}\n\nDevuelve JSON vÃ¡lido.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        928,
+        -208
+      ],
+      "id": "1c6d2dc5-304e-4923-8233-4d02cb71fe53",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Um3ASNf7GyCiffDx5qMED7wBeoEgpTbArOgBHbhPNGg",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Citas",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "TelegramID": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+            "Fecha": "={{ $json.output }}",
+            "Hora": "={{ $json.output }}",
+            "Especialidad": "={{ $json.output }}",
+            "Estado": "Confirmada"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "TelegramID",
+              "displayName": "TelegramID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Hora",
+              "displayName": "Hora",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Especialidad",
+              "displayName": "Especialidad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1280,
+        -208
+      ],
+      "id": "da6b1bc7-b82f-4758-a6d1-ca0681c96964",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "lb1rneI5PJfQx7pS",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        704,
+        -160
+      ],
+      "id": "74c8d2c1-313e-40ea-af01-0fcf6b3e71a6",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "Z1LUzDZlb8GVa0MG",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=âœ… Tu cita fue registrada.  \nðŸ“… Fecha: {{ $json.Fecha }}\nâ° Hora: {{ $json.Hora }}\nðŸ©º Especialidad: {{ $json.Especialidad }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1488,
+        -208
+      ],
+      "id": "266bf48e-768d-4b73-9438-4954f113af6c",
+      "name": "Send a text message",
+      "webhookId": "8b5a283a-d060-4ed2-a642-0f6fc3ee217d",
+      "credentials": {
+        "telegramApi": {
+          "id": "3dNgmRp8vjEiZ1Fa",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Um3ASNf7GyCiffDx5qMED7wBeoEgpTbArOgBHbhPNGg",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Citas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Um3ASNf7GyCiffDx5qMED7wBeoEgpTbArOgBHbhPNGg/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "TelegramID",
+              "lookupValue": "={{ $('Telegram Trigger').item.json.message.from.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1008,
+        0
+      ],
+      "id": "2150d11c-0c83-490b-a05d-532c9d5d279e",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "lb1rneI5PJfQx7pS",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let mensaje = \"ðŸ“‹ Tus citas:\\n\\n\";\n\nfor (const item of items) {\n  mensaje +=\n  `ðŸ“… ${item.json.Fecha}\nâ° ${item.json.Hora}\nðŸ©º ${item.json.Especialidad}\n\n`;\n}\n\nreturn [{ json: { mensaje } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1216,
+        0
+      ],
+      "id": "afbf5fc6-e874-4d6d-9c67-27c8411b711a",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.mensaje }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1424,
+        0
+      ],
+      "id": "2d784eea-35cf-4986-acb1-ba0e9e762d7f",
+      "name": "Send a text message1",
+      "webhookId": "86ff60ae-66df-47d5-8cdb-8d47d77aacf4",
+      "credentials": {
+        "telegramApi": {
+          "id": "3dNgmRp8vjEiZ1Fa",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "Bienvenido a MediConnect WhatsApp\n\nHola ðŸ‘‹, gracias por comunicarte con nuestro sistema de gestiÃ³n de citas mÃ©dicas.\n\nA travÃ©s de este servicio podrÃ¡s realizar tus trÃ¡mites de manera rÃ¡pida, segura y sin necesidad de llamadas telefÃ³nicas.\n\nðŸ“Œ Â¿QuÃ© deseas hacer hoy?\n\n1ï¸âƒ£ Agendar una cita mÃ©dica\nPrograma una nueva cita con el especialista de tu preferencia segÃºn la disponibilidad. Escribe AGENDAR\n\n2ï¸âƒ£ Consultar una cita existente\nVerifica la fecha, hora y estado de una cita previamente registrada. Escribe VER_CITAS\n\nâœï¸ Por favor, responde Ãºnicamente con el nÃºmero de la opciÃ³n que deseas seleccionar.\n\nNuestro sistema te guiarÃ¡ paso a paso durante el proceso.\n\nGracias por confiar en nosotros. ðŸ’™\nMediConnect WhatsApp\nGestiÃ³n inteligente de citas mÃ©dicas",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1056,
+        192
+      ],
+      "id": "8a9f6664-3374-4b8b-83cb-a5d2fb83e2d8",
+      "name": "Send a text message2",
+      "webhookId": "0b501d6e-09cf-4e7a-9740-75c5be2fef57",
+      "credentials": {
+        "telegramApi": {
+          "id": "3dNgmRp8vjEiZ1Fa",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -256,
+        -192
+      ],
+      "id": "9453b01b-a2a8-46e1-8b69-601cade5d4d7",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Um3ASNf7GyCiffDx5qMED7wBeoEgpTbArOgBHbhPNGg",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Citas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Um3ASNf7GyCiffDx5qMED7wBeoEgpTbArOgBHbhPNGg/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -32,
+        -192
+      ],
+      "id": "41c0d746-37a7-4028-ab40-5aae45515ef2",
+      "name": "Get row(s) in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "lb1rneI5PJfQx7pS",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const ahora = new Date();\n\nreturn items.filter(item => {\n  const cita = new Date(\n    `${item.json.Fecha}T${item.json.Hora}`\n  );\n\n  const minutos =\n    (cita - ahora) / (1000 * 60);\n\n  return minutos > 1380 &&\n         minutos < 1440;\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        176,
+        -192
+      ],
+      "id": "47235f21-6d7e-462b-98dd-947b348dd584",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.TelegramID }}",
+        "text": "=ðŸ”” Recordatorio MediConnect\n\nTienes una cita maÃ±ana.\n\nðŸ“… {{ $json.Fecha }}\nâ° {{ $json.Hora }}\nðŸ©º {{ $json.Especialidad }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        384,
+        -192
+      ],
+      "id": "19e2119a-377d-4120-9d37-50091a749b25",
+      "name": "Send a text message3",
+      "webhookId": "c61162a7-20e8-40f9-8628-1fee2b44beed",
+      "credentials": {
+        "telegramApi": {
+          "id": "3dNgmRp8vjEiZ1Fa",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dc1ad360-f641-4047-9fbc-619690c31b92",
+              "name": "telegramId",
+              "value": "={{ $json.message.chat.id }}",
+              "type": "number"
+            },
+            {
+              "id": "cabd973f-d6f2-4b6b-82ff-18114cd859a7",
+              "name": "nombre",
+              "value": "={{ $json.message.chat.first_name }}",
+              "type": "string"
+            },
+            {
+              "id": "2f9f652e-6ad9-4466-a5c8-7a2dde9afc46",
+              "name": "mensaje",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        320
+      ],
+      "id": "307e38c7-0283-43d9-93e4-9265e40f0369",
+      "name": "Edit Fields1"
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message1": {
+      "main": [
+        []
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d2286e6dc8934e60b835897828b4018955254f8fa92e3d8b9901bc319b5c9502"
+  }
+}
